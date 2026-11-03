@@ -1,0 +1,55 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Gradle y Archivos de compilación
+.gradle/
+build/
+*/build/
+captures/
+.kotlin/
+
+# Android Studio / IntelliJ IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.navigation/
+
+# Artefactos y ejecutables compilados
+*.apk
+*.aab
+*.aar
+*.dex
+*.class
+*.so
+
+# Claves, Firma y Propiedades Locales (Archivos Sensibles)
+local.properties
+key.properties
+secrets.properties
+*.jks
+*.keystore
+*.pepk
+google-services.json
+secrets.xml
+
+# Capturas y perfilado de rendimiento
+*.hprof
+
+# Archivos temporales del sistema operativo
+.DS_Store
+Thumbs.db
+*.log
