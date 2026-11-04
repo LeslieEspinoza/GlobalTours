@@ -32,7 +32,7 @@ fun HomeClienteScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            HeaderSection()
+            HeaderSection(navController = navController)
             Spacer(modifier = Modifier.height(24.dp))
             MotorReservasSection()
             Spacer(modifier = Modifier.height(24.dp))
@@ -41,8 +41,9 @@ fun HomeClienteScreen(navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeaderSection() {
+fun HeaderSection(navController: NavController) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -52,8 +53,14 @@ fun HeaderSection() {
             Text("GlobalTours", color = BluePrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text("Explore the world", color = Color.Gray, fontSize = 14.sp)
         }
-        IconButton(onClick = { /* Notificaciones */ }) {
-            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = BluePrimary)
+        IconButton(onClick = { navController.navigate("notificaciones") }) {
+            BadgedBox(
+                badge = {
+                    Badge(containerColor = Color.Red) { Text("3", color = Color.White) }
+                }
+            ) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = BluePrimary)
+            }
         }
     }
 }
