@@ -53,7 +53,10 @@ fun GlobalToursApp() {
         composable("itinerario") { ItinerarioScreen(navController) }
         composable("personalizar") { PersonalizarScreen(navController) }
         composable("confirmacion") { ConfirmacionScreen(navController) }
-        composable("voucher") { Text("Pantalla del Voucher VIP (Próximamente)") }
+        composable("voucher") { VoucherScreen(navController) }
+        composable("mis_viajes") { MisViajesScreen(navController) }
+        composable("perfil") { PerfilScreen(navController) }
+        composable("reservas") { ReservasScreen(navController) }
     }
 }
 
