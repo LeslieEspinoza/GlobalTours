@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 fun GlobalToursApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "home_cliente") {
+    NavHost(navController = navController, startDestination = "login") {
         composable("splash") { SplashScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("registro") { RegistroScreen(navController) }
