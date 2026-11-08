@@ -1,5 +1,5 @@
 package com.example.globaltours
-
+import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue // Importación clave para el 'by remember'
+import androidx.compose.runtime.setValue // Importación clave para el 'by remember'
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,7 +23,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import io.github.jan.supabase.postgrest.from
+import com.example.globaltours.R.drawable.logo_globaltours
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
 
 // Paleta de colores basada en los diseños de GlobalTours
@@ -33,15 +37,16 @@ val TextDark = Color(0xFF2A2A2A)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    // 1. Renombramos las variables para evitar conflictos con Supabase
+    var emailInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var cargando by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     fun iniciarSesion() {
-        if (email.isBlank() || password.isBlank()) {
+        if (emailInput.isBlank() || passwordInput.isBlank()) {
             mensajeError = "Por favor, completa todos los campos"
             return
         }
@@ -51,39 +56,19 @@ fun LoginScreen(navController: NavController) {
 
         scope.launch {
             try {
-                val usuarioRes = SupabaseProvider.client.from("usuarios")
-                    .select {
-                        filter {
-                            eq("email", email)
-                            eq("password", password)
-                        }
-                    }.decodeList<Usuario>()
-
-                if (usuarioRes.isNotEmpty()) {
-                    val usuario = usuarioRes.first()
-                    if (usuario.rol == "admin" || usuario.rol == "jefe") {
-                        navController.navigate("admin_dashboard") { popUpTo("login") { inclusive = true } }
-                    } else {
-                        navController.navigate("staff_dashboard") { popUpTo("login") { inclusive = true } }
-                    }
-                    return@launch
+                // 2. Usamos las variables renombradas directamente
+                SupabaseProvider.client.auth.signInWith(Email) {
+                    email = emailInput
+                    password = passwordInput
                 }
 
-                val clienteRes = SupabaseProvider.client.from("clientes")
-                    .select {
-                        filter {
-                            eq("email", email)
-                            eq("password", password)
-                        }
-                    }.decodeList<Cliente>()
-
-                if (clienteRes.isNotEmpty()) {
-                    navController.navigate("home_cliente") { popUpTo("login") { inclusive = true } }
-                } else {
-                    mensajeError = "Credenciales incorrectas"
+                navController.navigate("home_cliente") {
+                    popUpTo("login") { inclusive = true }
                 }
+
             } catch (e: Exception) {
-                mensajeError = "Error de conexión. Inténtalo más tarde."
+                mensajeError = "Credenciales incorrectas o error de conexión."
+                e.printStackTrace()
             } finally {
                 cargando = false
             }
@@ -99,7 +84,7 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.logo_globaltours),
+            painter = painterResource(id = logo_globaltours),
             contentDescription = "Logo",
             modifier = Modifier
                 .size(180.dp)
@@ -123,8 +108,8 @@ fun LoginScreen(navController: NavController) {
         )
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = emailInput,
+            onValueChange = { emailInput = it },
             label = { Text("Correo electrónico", color = Color.Gray) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = textFieldColors,
@@ -136,8 +121,8 @@ fun LoginScreen(navController: NavController) {
         )
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = passwordInput,
+            onValueChange = { passwordInput = it },
             label = { Text("Contraseña", color = Color.Gray) },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
