@@ -2,12 +2,27 @@ package com.example.globaltours
 
 import kotlinx.serialization.Serializable
 
+
 @Serializable
-data class ClienteProfile(
-    val nombres: String = "",
-    val apellidos: String = ""
+data class ClienteModel(
+    val id: Long? = null,
+    val auth_id: String? = null,
+    val nombres: String? = null,    // Coincide con tu DB
+    val apellidos: String? = null,  // Coincide con tu DB
+    val email: String? = null,
+    val telefono: String? = null,
+    val pasaporte: String? = null
 )
 
+@Serializable
+data class TicketSoporteModel(
+    val id: Long? = null,
+    val auth_id: String,
+    val tipo: String,
+    val asunto: String,
+    val descripcion: String,
+    val estado: String = "Pendiente"
+)
 @Serializable
 data class PaqueteTuristico(
     val id: Long = 0,

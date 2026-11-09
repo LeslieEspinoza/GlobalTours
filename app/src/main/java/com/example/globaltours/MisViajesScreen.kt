@@ -181,7 +181,7 @@ fun TarjetaViajeItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(viaje.titulo, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text(viaje.titulo, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Text(viaje.detalle, fontSize = 13.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(12.dp))

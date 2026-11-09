@@ -89,7 +89,7 @@ fun VoucherScreen(
                         // Cabecera del Boleto
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(48.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Reserva Confirmada", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text("Reserva Confirmada", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text("Código de Confirmación: GT-${item.id + 10000}", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -105,12 +105,12 @@ fun VoucherScreen(
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("Descripción:", color = Color.Gray, fontSize = 13.sp)
-                                Text(item.titulo, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
+                                Text(item.titulo, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.Black)
                             }
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("Detalles:", color = Color.Gray, fontSize = 13.sp)
-                                Text(item.detalle, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = TextDark)
+                                Text(item.detalle, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = Color.Black)
                             }
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -131,7 +131,7 @@ fun VoucherScreen(
                                 .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.QrCode2, contentDescription = "Código QR", tint = TextDark, modifier = Modifier.size(110.dp))
+                            Icon(Icons.Default.QrCode2, contentDescription = "Código QR", tint = Color.Black, modifier = Modifier.size(110.dp))
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))

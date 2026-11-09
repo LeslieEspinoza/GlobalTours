@@ -70,7 +70,7 @@ fun ItinerarioIAScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = GoldAccent)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Personaliza tu consulta IA", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextDark)
+                        Text("Personaliza tu consulta IA", fontWeight = FontWeight.Bold, fontSize = 16.sp, color =Color.Black)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -85,7 +85,7 @@ fun ItinerarioIAScreen(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Estilo de Viaje", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextDark)
+                    Text("Estilo de Viaje", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -159,7 +159,7 @@ fun ItinerarioIAScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text("Propuesta Generada", color = GoldAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text(itinerario.titulo_paquete, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text(itinerario.titulo_paquete, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text(itinerario.destino, fontSize = 14.sp, color = BluePrimary, fontWeight = FontWeight.SemiBold)
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -172,13 +172,13 @@ fun ItinerarioIAScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text("Hospedaje Sugerido", fontSize = 11.sp, color = Color.Gray)
-                                    Text(itinerario.hotel_sugerido, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                                    Text(itinerario.hotel_sugerido, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                                 }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Plan Día por Día", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text("Plan Día por Día", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         itinerario.dias.forEach { dia ->
@@ -194,7 +194,7 @@ fun ItinerarioIAScreen(
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     dia.actividades.forEach { act ->
-                                        Text("• $act", fontSize = 13.sp, color = TextDark, modifier = Modifier.padding(vertical = 2.dp))
+                                        Text("• $act", fontSize = 13.sp, color = Color.Black, modifier = Modifier.padding(vertical = 2.dp))
                                     }
                                 }
                             }

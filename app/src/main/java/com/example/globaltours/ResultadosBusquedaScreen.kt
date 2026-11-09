@@ -213,7 +213,7 @@ fun TarjetaHotelItem(hotel: Hotel, onReservar: () -> Unit) {
                 AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Text(hotel.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextDark)
+            Text(hotel.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Star, contentDescription = null, tint = GoldAccent, modifier = Modifier.size(16.dp))
                 Text(" ${hotel.estrellas} Estrellas", fontSize = 12.sp, color = Color.Gray)
@@ -237,7 +237,7 @@ fun TarjetaExcursionItem(excursion: Excursion, onReservar: () -> Unit) {
                 AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Text(excursion.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextDark)
+            Text(excursion.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
             Text("Duración: ${excursion.duracion_horas} Horas", fontSize = 12.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

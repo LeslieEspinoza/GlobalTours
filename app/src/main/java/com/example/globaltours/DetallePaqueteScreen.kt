@@ -171,7 +171,7 @@ fun DetallePaqueteScreen(
                         text = item.titulo,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        color = Color.Black
                     )
 
                     Row(
@@ -194,7 +194,7 @@ fun DetallePaqueteScreen(
                     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
 
                     // Descripción
-                    Text("Descripción del Viaje", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                    Text("Descripción del Viaje", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Text(
                         text = item.descripcion ?: "Disfruta de una experiencia inolvidable diseñada a tu medida con alojamiento de alta categoría, transporte privado y asistencia guiada en todo momento.",
                         fontSize = 14.sp,
@@ -203,7 +203,7 @@ fun DetallePaqueteScreen(
                     )
 
                     // Incluye
-                    Text("Qué incluye este paquete", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                    Text("Qué incluye este paquete", fontSize = 18.sp, fontWeight = FontWeight.Bold, color =Color.Black)
 
                     val servicios = item.incluye?.split(",") ?: listOf(
                         "Vuelos redondos incluidos",
@@ -220,7 +220,7 @@ fun DetallePaqueteScreen(
                         ) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(servicio.trim(), fontSize = 14.sp, color = TextDark)
+                            Text(servicio.trim(), fontSize = 14.sp, color = Color.Black)
                         }
                     }
                 }

@@ -55,10 +55,17 @@ fun GlobalToursApp() {
         composable("personalizar") { PersonalizarScreen(navController) }
         composable("confirmacion") { ConfirmacionScreen(navController) }
         composable("mis_viajes") { MisViajesScreen(navController) }
-        composable("perfil") { PerfilScreen(navController) }
+        composable("perfil") {
+            PerfilClienteScreen(navController = navController)
+        }
         composable("reservas") { ReservasScreen(navController) }
         composable("notificaciones") { NotificacionesScreen(navController) }
-        composable("chat_soporte") { ChatSoporteScreen(navController) }
+        composable("chat_soporte_ia") {
+            ChatSoporteIAScreen(navController)
+        }
+        composable("agendar_cita_soporte") {
+            AgendarCitaScreen(navController)
+        }
         composable("mis_datos") { MisDatosScreen(navController) }
         composable("preferencias") { PreferenciasScreen(navController) }
         composable("metodos_pago") { MetodosPagoScreen(navController) }

@@ -58,7 +58,7 @@ fun PersonalizarScreen(navController: NavController) {
         ) {
             OptimizadorCard()
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Alternativas Inteligentes Recomendadas", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text("Alternativas Inteligentes Recomendadas", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
             AlternativaCard(
                 titulo = "Té Privado en Daitoku-ji & Shojin Ryori",
@@ -109,7 +109,7 @@ fun AlternativaCard(titulo: String, precio: String, diferencia: String, tag: Str
                 Text(diferencia, color = if (diferencia.startsWith("-")) Color(0xFF2E7D32) else Color(0xFFD32F2F), fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text(titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(4.dp))
             Text("Precio total: $precio", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))

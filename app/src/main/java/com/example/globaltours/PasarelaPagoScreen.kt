@@ -110,7 +110,7 @@ fun PasarelaPagoScreen(
                     text = "¡Pago Procesado con Éxito!",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = TextDark
+                    color = Color.Black
                 )
             },
             text = {
@@ -201,7 +201,7 @@ fun PasarelaPagoScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Resumen de tu Pedido", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(item.titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text(item.titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text(item.detalle, fontSize = 13.sp, color = Color.DarkGray)
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -213,7 +213,7 @@ fun PasarelaPagoScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Total a Liquidar:", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                            Text("Total a Liquidar:", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                             Text(
                                 "$${item.precio.toInt()} USD",
                                 fontSize = 20.sp,
@@ -239,7 +239,7 @@ fun PasarelaPagoScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.CreditCard, contentDescription = null, tint = BluePrimary)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ingresa los Datos de la Tarjeta", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text("Ingresa los Datos de la Tarjeta", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     }
 
                     // Formateo de tarjeta 4 en 4

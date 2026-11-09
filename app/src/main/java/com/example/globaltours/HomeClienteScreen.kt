@@ -42,6 +42,7 @@ fun HomeClienteScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         try {
+
             val userId = SupabaseProvider.client.auth.currentUserOrNull()?.id
             if (userId != null) {
                 val cliente = SupabaseProvider.client.from("clientes")
@@ -49,13 +50,14 @@ fun HomeClienteScreen(navController: NavController) {
                         filter {
                             eq("auth_id", userId)
                         }
-                    }.decodeSingleOrNull<ClienteProfile>()
+                    }.decodeSingleOrNull<ClienteModel>()
+                if (cliente != null && !cliente.nombres.isNullOrBlank()) {
 
-                if (cliente != null && cliente.nombres.isNotBlank()) {
-                    nombreCliente = cliente.nombres.split(" ").firstOrNull() ?: cliente.nombres
+                    nombreCliente = cliente.nombres!!.split(" ").firstOrNull() ?: cliente.nombres!!
                 }
             }
 
+            // 2. Cargar Paquetes Destacados
             val paquetes = SupabaseProvider.client.from("paquetes_turisticos")
                 .select {
                     filter {
@@ -66,7 +68,7 @@ fun HomeClienteScreen(navController: NavController) {
             listaPaquetes = paquetes
 
         } catch (e: Exception) {
-            android.util.Log.e("HOME_SUPABASE", "Error al cargar datos: ${e.message}", e)
+            android.util.Log.e("HOME_ERROR", "Error al cargar datos: ${e.message}", e)
         } finally {
             cargandoCliente = false
         }
@@ -94,7 +96,6 @@ fun HomeClienteScreen(navController: NavController) {
         }
     }
 }
-
 // --- SECCIONES DE LA INTERFAZ ---
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -161,7 +162,7 @@ fun PaquetesDestacadosSection(paquetes: List<PaqueteTuristico>, navController: N
                 text = "Destinos Destacados",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = Color.Black
             )
             TextButton(onClick = { navController.navigate("reservas") }) {
                 Text("Ver todos", color = BluePrimary, fontWeight = FontWeight.SemiBold)
@@ -241,7 +242,7 @@ fun TarjertaPaqueteItem(paquete: PaqueteTuristico, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = paquete.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextDark)
+            Text(text = paquete.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
             Text(text = paquete.destino, color = Color.Gray, fontSize = 13.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -291,7 +292,7 @@ fun MotorReservasSection(navController: NavController) {
             text = "Motor de Busqueda y Disponibilidad",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = TextDark,
+            color = Color.Black,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 

@@ -62,7 +62,7 @@ fun ResumenViajeCard() {
             Icon(Icons.Default.FlightTakeoff, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(32.dp))
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Escapada Kyoto & Tokio", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                Text("Escapada Kyoto & Tokio", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("3 Días / 2 Noches • 2 Personas", fontSize = 14.sp, color = Color.Gray)
             }
         }
@@ -77,7 +77,8 @@ fun DesgloseFinalCard() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Resumen de Costos", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+
+            Text("Resumen de Costos", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
 
             FilaCosto("Itinerario Base (x2)", "$5,500.00")
@@ -101,7 +102,7 @@ fun FilaCosto(concepto: String, monto: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(concepto, fontSize = 14.sp, color = Color.DarkGray)
-        Text(monto, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextDark)
+        Text(monto, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
     }
 }
 
@@ -113,12 +114,12 @@ fun MetodoPagoCard() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Método de Pago", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text("Método de Pago", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CreditCard, contentDescription = null, tint = BluePrimary)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("•••• •••• •••• 4242", fontSize = 16.sp, color = TextDark, fontWeight = FontWeight.Medium)
+                Text("•••• •••• •••• 4242", fontSize = 16.sp, color = Color.Black, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(onClick = { /* Cambiar tarjeta */ }) {
                     Text("Cambiar", color = BluePrimary)

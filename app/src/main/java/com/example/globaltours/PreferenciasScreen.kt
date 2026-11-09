@@ -45,14 +45,14 @@ fun PreferenciasScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Sección Vuelo
-            Text("Preferencia de Asiento", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text("Preferencia de Asiento", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OpcionBoton(texto = "Ventana", seleccionado = asiento == "Ventana", onClick = { asiento = "Ventana" }, modifier = Modifier.weight(1f))
                 OpcionBoton(texto = "Pasillo", seleccionado = asiento == "Pasillo", onClick = { asiento = "Pasillo" }, modifier = Modifier.weight(1f))
             }
 
             // Sección Dieta
-            Text("Requisitos Dietéticos", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text("Requisitos Dietéticos", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 val opcionesDieta = listOf("Ninguna", "Vegetariana", "Vegana", "Sin Gluten")
                 opcionesDieta.forEach { opcion ->
@@ -62,7 +62,7 @@ fun PreferenciasScreen(navController: NavController) {
                             onClick = { dieta = opcion },
                             colors = RadioButtonDefaults.colors(selectedColor = BluePrimary)
                         )
-                        Text(opcion, color = TextDark, fontSize = 16.sp)
+                        Text(opcion, color = Color.Black, fontSize = 16.sp)
                     }
                 }
             }

@@ -168,7 +168,7 @@ fun TarjetaNotificacionItem(
                         text = notificacion.titulo,
                         fontSize = 15.sp,
                         fontWeight = if (!notificacion.leido) FontWeight.Bold else FontWeight.SemiBold,
-                        color = TextDark
+                        color = Color.Black
                     )
 
                     if (!notificacion.leido) {

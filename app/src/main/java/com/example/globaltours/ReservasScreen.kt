@@ -199,7 +199,7 @@ fun ReservaItemCard(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(reserva.titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                        Text(reserva.titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text(reserva.detalle, fontSize = 12.sp, color = Color.Gray)
                     }
                 }

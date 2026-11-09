@@ -74,7 +74,7 @@ fun TarjetaPagoCard(marca: String, terminacion: String, expiracion: String) {
             Icon(Icons.Default.CreditCard, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(40.dp))
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("$marca terminada en $terminacion", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                Text("$marca terminada en $terminacion", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("Expira: $expiracion", fontSize = 14.sp, color = Color.Gray)
             }
             IconButton(onClick = { /* Eliminar tarjeta */ }) {
