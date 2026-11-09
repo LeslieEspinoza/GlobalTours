@@ -1,50 +1,93 @@
 package com.example.globaltours
 
-
-
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// 1. Tabla Clientes
 @Serializable
-data class Cliente(
-    val id: Long? = null,
-    val nombres: String,
-    val apellidos: String,
-    val edad: Int,
-    val telefono: String,
-    val direccion: String,
-    val pais: String,
-    val email: String,
-    val password: String,
-    @SerialName("fecha_registro")
-    val fechaRegistro: String? = null
+data class ClienteProfile(
+    val nombres: String = "",
+    val apellidos: String = ""
 )
 
-// 2. Tabla Usuarios (Personal interno)
 @Serializable
-data class Usuario(
-    val id: Long? = null,
-    val nombres: String,
-    val apellidos: String,
-    val email: String,
-    val password: String,
-    val rol: String, // "empleado", "jefe", "admin"
-    @SerialName("fecha_creacion")
-    val fechaCreacion: String? = null
+data class PaqueteTuristico(
+    val id: Long = 0,
+    val titulo: String = "",
+    val destino: String = "",
+    val duracion_dias: Int = 0,
+    val precio_base: Double = 0.0,
+    val destacado: Boolean? = false,
+    val imagen_url: String? = null,
+    val descripcion: String? = null,
+    val incluye: String? = null
 )
 
-// 3. Tabla Citas (Cotizaciones)
 @Serializable
-data class Cita(
-    val id: Long? = null,
-    val nombre: String? = null,
-    val email: String? = null,
-    val telefono: String? = null,
-    val destino: String? = null,
-    @SerialName("numero_viajeros")
-    val numeroViajeros: Int? = null, // <-- Ahora acepta valores nulos
-    val presupuesto: String? = null, // <-- Ahora acepta valores nulos
-    @SerialName("fecha_solicitud")
-    val fechaSolicitud: String? = null
+data class Vuelo(
+    val id: Long = 0,
+    val origen: String = "",
+    val destino: String = "",
+    val aerolinea: String = "",
+    val precio: Double = 0.0,
+    val horario: String = ""
+)
+
+@Serializable
+data class Hotel(
+    val id: Long = 0,
+    val nombre: String = "",
+    val ciudad: String = "",
+    val precio_noche: Double = 0.0,
+    val estrellas: Int = 5,
+    val imagen_url: String? = null
+)
+
+@Serializable
+data class Excursion(
+    val id: Long = 0,
+    val titulo: String = "",
+    val ciudad: String = "",
+    val precio: Double = 0.0,
+    val duracion_horas: Int = 0,
+    val imagen_url: String? = null
+)
+
+@Serializable
+data class ReservaModel(
+    val id: Long = 0,
+    val auth_id: String = "",
+    val tipo_servicio: String = "",
+    val titulo: String = "",
+    val detalle: String = "",
+    val precio: Double = 0.0,
+    val estado: String = "Pendiente de Pago"
+)
+
+@Serializable
+data class NotificacionModel(
+    val id: Long = 0,
+    val auth_id: String = "",
+    val titulo: String = "",
+    val mensaje: String = "",
+    val tipo: String = "sistema",
+    val leido: Boolean = false,
+    val created_at: String? = null
+)
+
+@Serializable
+data class DiaItinerario(
+    val dia: Int = 1,
+    val titulo: String = "",
+    val actividades: List<String> = emptyList(),
+    val costo_estimado_dia: Double = 0.0
+)
+
+@Serializable
+data class ItinerarioIARespuesta(
+    val titulo_paquete: String = "",
+    val destino: String = "",
+    val duracion_dias: Int = 0,
+    val presupuesto_total_estimado: Double = 0.0,
+    val descripcion_general: String = "",
+    val hotel_sugerido: String = "",
+    val dias: List<DiaItinerario> = emptyList()
 )

@@ -15,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -40,7 +42,7 @@ class MainActivity : ComponentActivity() {
 fun GlobalToursApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "splash") {
         composable("splash") { SplashScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("registro") { RegistroScreen(navController) }
@@ -50,10 +52,8 @@ fun GlobalToursApp() {
 
         // Rutas del cliente
         composable("home_cliente") { HomeClienteScreen(navController) }
-        composable("itinerario") { ItinerarioScreen(navController) }
         composable("personalizar") { PersonalizarScreen(navController) }
         composable("confirmacion") { ConfirmacionScreen(navController) }
-        composable("voucher") { VoucherScreen(navController) }
         composable("mis_viajes") { MisViajesScreen(navController) }
         composable("perfil") { PerfilScreen(navController) }
         composable("reservas") { ReservasScreen(navController) }
@@ -62,26 +62,104 @@ fun GlobalToursApp() {
         composable("mis_datos") { MisDatosScreen(navController) }
         composable("preferencias") { PreferenciasScreen(navController) }
         composable("metodos_pago") { MetodosPagoScreen(navController) }
+        composable(
+            route = "pasarela_pago?reservaId={reservaId}",
+            arguments = listOf(
+                navArgument("reservaId") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                }
+            )
+        ) { backStackEntry ->
+            val reservaId = backStackEntry.arguments?.getLong("reservaId") ?: 0L
+            PasarelaPagoScreen(
+                navController = navController,
+                reservaId = reservaId
+            )
+        }
+        composable(
+            route = "voucher?id={id}",
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                }
+            )
+        ) { backStackEntry ->
+            val reservaId = backStackEntry.arguments?.getLong("id") ?: 0L
+            VoucherScreen(
+                navController = navController,
+                reservaId = reservaId
+            )
+        }
+
+        composable(
+            route = "itinerario?presupuesto={presupuesto}",
+            arguments = listOf(
+                navArgument("presupuesto") {
+                    type = NavType.IntType
+                    defaultValue = 2800
+                }
+            )
+        ) { backStackEntry ->
+            val presupuesto = backStackEntry.arguments?.getInt("presupuesto") ?: 2800
+            ItinerarioIAScreen(
+                navController = navController,
+                presupuestoInicial = presupuesto
+            )
+        }
+
+        composable(
+            route = "detalle_paquete?id={id}",
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                }
+            )
+        ) { backStackEntry ->
+            val paqueteId = backStackEntry.arguments?.getLong("id") ?: 0L
+            DetallePaqueteScreen(
+                navController = navController,
+                paqueteId = paqueteId
+            )
+        }
+
+        composable(
+            route = "resultados_busqueda?tipo={tipo}&origen={origen}&destino={destino}",
+            arguments = listOf(
+                navArgument("tipo") { defaultValue = "Vuelos" },
+                navArgument("origen") { defaultValue = "" },
+                navArgument("destino") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val tipo = backStackEntry.arguments?.getString("tipo") ?: "Vuelos"
+            val origen = backStackEntry.arguments?.getString("origen") ?: ""
+            val destino = backStackEntry.arguments?.getString("destino") ?: ""
+
+            ResultadosBusquedaScreen(
+                navController = navController,
+                tipo = tipo,
+                origen = origen,
+                destino = destino
+            )
+        }
     }
 }
 
 @Composable
 fun SplashScreen(navController: NavController) {
-    // Efecto para esperar 2.5 segundos y navegar al Login
     LaunchedEffect(key1 = true) {
         delay(2500L)
         navController.navigate("login") {
-            // Limpia el Splash Screen del historial para que el usuario no pueda volver a él con el botón "Atrás"
             popUpTo("splash") { inclusive = true }
         }
     }
 
-    // Diseño visual del Splash Screen
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Asegúrate de que el nombre coincida con el archivo que pegaste en res/drawable
         Image(
             painter = painterResource(id = R.drawable.logo_globaltours),
             contentDescription = "Logotipo GlobalTours",
@@ -89,4 +167,3 @@ fun SplashScreen(navController: NavController) {
         )
     }
 }
-

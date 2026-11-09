@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+
     // Supabase SDK (BOM maneja las versiones compatibles)
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
@@ -59,11 +60,16 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.compose.material:material-icons-extended")
 
+
+
+
+
     // Motor de red Ktor para Android
     implementation("io.ktor:ktor-client-android:3.0.0")
 
     // Para manejar Corrutinas de Kotlin en el ciclo de vida
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

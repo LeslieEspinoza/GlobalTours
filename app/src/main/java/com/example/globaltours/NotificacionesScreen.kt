@@ -1,34 +1,69 @@
 package com.example.globaltours
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificacionesScreen(navController: NavController) {
+    var listaNotificaciones by remember { mutableStateOf<List<NotificacionModel>>(emptyList()) }
+    var cargando by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+
+    fun cargarNotificaciones() {
+        cargando = true
+        scope.launch {
+            try {
+                val userId = SupabaseProvider.client.auth.currentUserOrNull()?.id
+                if (userId != null) {
+                    val notifs = SupabaseProvider.client.from("notifications")
+                        .select {
+                            filter {
+                                eq("auth_id", userId)
+                            }
+                        }.decodeList<NotificacionModel>()
+
+                    listaNotificaciones = notifs.sortedByDescending { it.id }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NOTIFICACIONES_ERROR", "Error al cargar: ${e.message}", e)
+            } finally {
+                cargando = false
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        cargarNotificaciones()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Notificaciones", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BluePrimary)
@@ -36,69 +71,123 @@ fun NotificacionesScreen(navController: NavController) {
         },
         containerColor = BackgroundBeige
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp)
         ) {
-            NotificacionCard(
-                titulo = "Check-in Disponible",
-                mensaje = "Tu vuelo a Tokio JL-001 ya está abierto para check-in.",
-                tiempo = "Hace 2 horas",
-                icono = Icons.Default.FlightTakeoff,
-                colorIcono = BluePrimary,
-                noLeida = true
-            )
-            NotificacionCard(
-                titulo = "Tu Itinerario IA está listo",
-                mensaje = "Hemos diseñado tu ruta personalizada por Kyoto.",
-                tiempo = "Hace 5 horas",
-                icono = Icons.Default.AutoAwesome,
-                colorIcono = GoldAccent,
-                noLeida = true
-            )
-            NotificacionCard(
-                titulo = "Recordatorio de Pago",
-                mensaje = "Tu reserva en el Hotel Mitsui vence en 24 horas.",
-                tiempo = "Ayer",
-                icono = Icons.Default.Payment,
-                colorIcono = Color(0xFFD32F2F),
-                noLeida = false
-            )
+            if (cargando) {
+                CircularProgressIndicator(color = BluePrimary, modifier = Modifier.align(Alignment.Center))
+            } else if (listaNotificaciones.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.NotificationsNone, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(64.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("No tienes notificaciones por el momento", color = Color.Gray, fontSize = 15.sp)
+                    }
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(listaNotificaciones) { notificacion ->
+                        TarjetaNotificacionItem(
+                            notificacion = notificacion,
+                            onClick = {
+                                if (!notificacion.leido) {
+                                    scope.launch {
+                                        try {
+                                            SupabaseProvider.client.from("notifications").update({
+                                                set("leido", true)
+                                            }) {
+                                                filter {
+                                                    eq("id", notificacion.id)
+                                                }
+                                            }
+                                            cargarNotificaciones()
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("NOTIF_READ_ERROR", "Error: ${e.message}", e)
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun NotificacionCard(titulo: String, mensaje: String, tiempo: String, icono: ImageVector, colorIcono: Color, noLeida: Boolean) {
+fun TarjetaNotificacionItem(
+    notificacion: NotificacionModel,
+    onClick: () -> Unit
+) {
+    val (icono, colorIcono) = when (notificacion.tipo.lowercase()) {
+        "reserva" -> Pair(Icons.Default.ConfirmationNumber, BluePrimary)
+        "oferta" -> Pair(Icons.Default.LocalOffer, GoldAccent)
+        else -> Pair(Icons.Default.Info, Color(0xFF1976D2))
+    }
+
+    val contenedorColor = if (!notificacion.leido) Color.White else Color(0xFFF5F5F5)
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = if (noLeida) Color.White else Color(0xFFFAFAFA)),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (noLeida) 2.dp else 0.dp),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = contenedorColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (!notificacion.leido) 3.dp else 1.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Box(
-                modifier = Modifier.size(48.dp).background(BackgroundBeige, CircleShape),
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(colorIcono.copy(alpha = 0.15f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icono, contentDescription = null, tint = colorIcono)
+                Icon(icono, contentDescription = null, tint = colorIcono, modifier = Modifier.size(24.dp))
             }
-            Spacer(modifier = Modifier.width(16.dp))
+
+            Spacer(modifier = Modifier.width(14.dp))
+
             Column(modifier = Modifier.weight(1f)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(titulo, fontSize = 16.sp, fontWeight = if (noLeida) FontWeight.Bold else FontWeight.Normal, color = TextDark)
-                    if (noLeida) {
-                        Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = notificacion.titulo,
+                        fontSize = 15.sp,
+                        fontWeight = if (!notificacion.leido) FontWeight.Bold else FontWeight.SemiBold,
+                        color = TextDark
+                    )
+
+                    if (!notificacion.leido) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(GoldAccent, CircleShape)
+                        )
                     }
                 }
+
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(mensaje, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 18.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(tiempo, fontSize = 12.sp, color = Color.Gray)
+
+                Text(
+                    text = notificacion.mensaje,
+                    fontSize = 13.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 18.sp
+                )
             }
         }
     }
