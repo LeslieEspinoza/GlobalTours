@@ -314,6 +314,7 @@ fun TarjetaViajeItem(
                                     ?: email?.substringBefore("@") // Como alternativa usa el texto antes del @
 
                                 val evaluacion = EvaluacionClienteInsert(
+
                                     calificacion = calificacion,
                                     comentario = comentario,
                                     paquete_nombre = viaje.titulo,
