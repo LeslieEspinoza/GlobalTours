@@ -106,3 +106,11 @@ data class ItinerarioIARespuesta(
     val hotel_sugerido: String = "",
     val dias: List<DiaItinerario> = emptyList()
 )
+@Serializable
+data class CitaModel(
+    val id: Long? = null,
+    val nombre: String,
+    val email: String,
+    val telefono: String,
+    val destino: String
+)

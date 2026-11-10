@@ -203,7 +203,7 @@ fun PerfilClienteScreen(navController: NavController) {
                         ) {
                             Icon(Icons.Default.Star, contentDescription = null, tint = GoldAccent, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Miembro Frequent Flyer", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("MIEMBRO FRECUENTE", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

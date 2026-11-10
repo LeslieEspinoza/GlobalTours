@@ -132,21 +132,7 @@ fun ReservasScreen(navController: NavController) {
                         ReservaItemCard(
                             reserva = reserva,
                             onPagarAhora = {
-                                scope.launch {
-                                    try {
-                                        // Actualizar estado en Supabase
-                                        SupabaseProvider.client.from("reservas").update({
-                                            set("estado", "Confirmado")
-                                        }) {
-                                            filter {
-                                                eq("id", reserva.id)
-                                            }
-                                        }
-                                        cargarReservas() // Recargar lista
-                                    } catch (e: Exception) {
-                                        android.util.Log.e("PAGO_ERROR", "Error al pagar: ${e.message}", e)
-                                    }
-                                }
+                                navController.navigate("pasarela_pago?reservaId=${reserva.id}")
                             }
                         )
                     }

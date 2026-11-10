@@ -35,6 +35,36 @@ fun AgendarCitaScreen(navController: NavController) {
     var expandirDropdown by remember { mutableStateOf(false) }
     var enviando by remember { mutableStateOf(false) }
 
+    // Variables para almacenar los datos del cliente activo
+    var nombreUsuario by remember { mutableStateOf("") }
+    var emailUsuario by remember { mutableStateOf("") }
+    var telefonoUsuario by remember { mutableStateOf("") }
+
+    // Cargar datos del usuario al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        try {
+            val user = SupabaseProvider.client.auth.currentUserOrNull()
+            if (user != null) {
+                emailUsuario = user.email ?: "Sin correo"
+
+                // Buscar nombre y teléfono en la tabla clientes
+                val cliente = SupabaseProvider.client.from("clientes")
+                    .select { filter { eq("auth_id", user.id) } }
+                    .decodeSingleOrNull<ClienteModel>()
+
+                if (cliente != null) {
+                    nombreUsuario = "${cliente.nombres ?: ""} ${cliente.apellidos ?: ""}".trim()
+                    telefonoUsuario = cliente.telefono ?: "Sin teléfono"
+                } else {
+                    nombreUsuario = "Cliente ID: ${user.id.take(5)}"
+                    telefonoUsuario = "Sin teléfono"
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("CITA_ERROR", "Error al cargar datos del usuario: ${e.message}")
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -64,7 +94,7 @@ fun AgendarCitaScreen(navController: NavController) {
             )
 
             Text(
-                "Completa este formulario y un asesor se pondrá en contacto contigo a la brevedad.",
+                "Completa este formulario y nuestro equipo de atención se pondrá en contacto contigo a la brevedad.",
                 fontSize = 14.sp,
                 color = Color.Gray
             )
@@ -136,6 +166,7 @@ fun AgendarCitaScreen(navController: NavController) {
                         try {
                             val userId = SupabaseProvider.client.auth.currentUserOrNull()?.id
                             if (userId != null) {
+                                // 1. Guardar en tabla tickets_soporte
                                 val nuevoTicket = TicketSoporteModel(
                                     auth_id = userId,
                                     tipo = tipoSeleccionado,
@@ -144,11 +175,21 @@ fun AgendarCitaScreen(navController: NavController) {
                                 )
                                 SupabaseProvider.client.from("tickets_soporte").insert(nuevoTicket)
 
-                                Toast.makeText(context, "Solicitud enviada con éxito", Toast.LENGTH_LONG).show()
-                                navController.popBackStack() // Volver al perfil
+                                // 2. Guardar en tabla citas para que el área de atención lo gestione en la web
+                                val nuevaCita = CitaModel(
+                                    nombre = nombreUsuario,
+                                    email = emailUsuario,
+                                    telefono = telefonoUsuario,
+                                    destino = "Soporte: $asunto ($tipoSeleccionado)"
+                                )
+                                SupabaseProvider.client.from("citas").insert(nuevaCita)
+
+                                Toast.makeText(context, "Solicitud enviada a atención con éxito", Toast.LENGTH_LONG).show()
+                                navController.popBackStack()
                             }
                         } catch (e: Exception) {
                             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            android.util.Log.e("INSERT_ERROR", "Error al insertar cita/ticket", e)
                         } finally {
                             enviando = false
                         }
