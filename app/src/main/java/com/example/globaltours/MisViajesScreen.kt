@@ -304,10 +304,21 @@ fun TarjetaViajeItem(
                         // Guardar en Supabase
                         scope.launch {
                             try {
+                                // Obtener datos del usuario autenticado en Supabase
+                                val usuarioActual = SupabaseProvider.client.auth.currentUserOrNull()
+                                val email = usuarioActual?.email
+
+                                // Intentar obtener el nombre del usuario desde sus metadatos (si existe)
+                                val nombre = usuarioActual?.userMetadata?.get("full_name")?.toString()
+                                    ?: usuarioActual?.userMetadata?.get("name")?.toString()
+                                    ?: email?.substringBefore("@") // Como alternativa usa el texto antes del @
+
                                 val evaluacion = EvaluacionClienteInsert(
                                     calificacion = calificacion,
                                     comentario = comentario,
-                                    paquete_nombre = viaje.titulo
+                                    paquete_nombre = viaje.titulo,
+                                    cliente_email = email,
+                                    cliente_nombre = nombre
                                 )
 
                                 SupabaseProvider.client.from("evaluaciones_clientes").insert(evaluacion)
