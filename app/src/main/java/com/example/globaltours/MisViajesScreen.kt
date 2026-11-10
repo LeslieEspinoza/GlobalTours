@@ -158,6 +158,7 @@ fun TarjetaViajeItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // CABECERA: TIPO Y ESTADO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -192,64 +193,78 @@ fun TarjetaViajeItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // DETALLES DEL VIAJE
             Text(viaje.titulo, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-            Text(viaje.detalle, fontSize = 13.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(viaje.detalle, fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // NUEVA FILA INFERIOR CON EL BOTÓN DE CALIFICAR
+            // PRECIO EN SU PROPIA LÍNEA
+            Text(
+                text = "$${viaje.precio.toInt()} USD",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = BluePrimary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // FILA DE BOTONES DINÁMICA (50/50 DE ANCHO)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp), // Espacio entre botones
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "$${viaje.precio.toInt()} USD",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = BluePrimary
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-
-                    // Botón de Calificar (Se muestra solo si el viaje está pagado)
-                    if (estaPagado) {
-                        TextButton(onClick = { mostrarDialogo = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Calificar",
-                                tint = Color(0xFFFFC107)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Calificar", color = BluePrimary, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Button(
-                        onClick = onClickVoucher,
-                        enabled = estaPagado,
+                // Botón de Calificar (Toma la mitad del espacio)
+                if (estaPagado) {
+                    OutlinedButton(
+                        onClick = { mostrarDialogo = true },
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BluePrimary,
-                            contentColor = Color.White,
-                            disabledContainerColor = Color(0xFFE0E0E0),
-                            disabledContentColor = Color(0xFF9E9E9E)
-                        )
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BluePrimary)
                     ) {
                         Icon(
-                            imageVector = if (estaPagado) Icons.Default.ConfirmationNumber else Icons.Default.Lock,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Calificar",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (estaPagado) "Ver Voucher" else "Pago Pendiente",
+                            text = "Calificar",
+                            fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                            maxLines = 1
                         )
                     }
+                }
+
+                // Botón de Voucher (Si está pagado toma mitad del espacio, sino toma todo el ancho)
+                Button(
+                    onClick = onClickVoucher,
+                    enabled = estaPagado,
+                    modifier = if (estaPagado) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFFE0E0E0),
+                        disabledContentColor = Color(0xFF9E9E9E)
+                    )
+                ) {
+                    Icon(
+                        imageVector = if (estaPagado) Icons.Default.ConfirmationNumber else Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (estaPagado) "Ver Voucher" else "Pago Pendiente",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
                 }
             }
         }
@@ -304,17 +319,13 @@ fun TarjetaViajeItem(
                         // Guardar en Supabase
                         scope.launch {
                             try {
-                                // Obtener datos del usuario autenticado en Supabase
                                 val usuarioActual = SupabaseProvider.client.auth.currentUserOrNull()
                                 val email = usuarioActual?.email
-
-                                // Intentar obtener el nombre del usuario desde sus metadatos (si existe)
                                 val nombre = usuarioActual?.userMetadata?.get("full_name")?.toString()
                                     ?: usuarioActual?.userMetadata?.get("name")?.toString()
-                                    ?: email?.substringBefore("@") // Como alternativa usa el texto antes del @
+                                    ?: email?.substringBefore("@")
 
                                 val evaluacion = EvaluacionClienteInsert(
-
                                     calificacion = calificacion,
                                     comentario = comentario,
                                     paquete_nombre = viaje.titulo,

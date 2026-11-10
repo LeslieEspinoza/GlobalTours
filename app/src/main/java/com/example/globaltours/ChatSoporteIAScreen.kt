@@ -1,9 +1,12 @@
 package com.example.globaltours
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,8 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.shape.CircleShape
-
 
 data class MensajeChat(val texto: String, val esUsuario: Boolean)
 
@@ -29,12 +30,40 @@ data class MensajeChat(val texto: String, val esUsuario: Boolean)
 @Composable
 fun ChatSoporteIAScreen(navController: NavController) {
     var mensajeInput by remember { mutableStateOf("") }
-    var listaMensajes by remember { mutableStateOf(listOf(
-        MensajeChat("¡Hola! Soy tu asistente de viaje IA de GlobalTours ✈️. ¿En qué te puedo ayudar hoy? (Ej. ¿Qué incluye el paquete a París?, ¿Cómo cancelo una reserva?)", false)
-    )) }
+
+    // Mensaje inicial con el menú de opciones numéricas
+    val mensajeBienvenida = """
+        ¡Hola! Soy tu asistente de viaje IA de GlobalTours ✈️. Puedes escribirme tu duda o elegir una de las siguientes opciones enviando el número:
+        
+        1️⃣ ¿Cómo cancelo una reserva?
+        2️⃣ ¿Qué incluyen los paquetes VIP?
+        3️⃣ Métodos de pago aceptados
+        4️⃣ Hablar con un asesor humano
+    """.trimIndent()
+
+    var listaMensajes by remember { mutableStateOf(listOf(MensajeChat(mensajeBienvenida, false))) }
     var aiEscribiendo by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+
+    // Opciones rápidas para que el usuario no tenga que teclear
+    val opcionesRapidas = listOf("1", "2", "3", "4")
+
+    // Función centralizada para enviar mensajes
+    fun enviarMensaje(texto: String) {
+        if (texto.isBlank()) return
+
+        listaMensajes = listaMensajes + MensajeChat(texto, true)
+        mensajeInput = ""
+        aiEscribiendo = true
+
+        scope.launch {
+            delay(1200) // Simula tiempo de procesamiento de la IA
+            val respuestaIA = generarRespuestaIA(texto)
+            listaMensajes = listaMensajes + MensajeChat(respuestaIA, false)
+            aiEscribiendo = false
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -76,57 +105,74 @@ fun ChatSoporteIAScreen(navController: NavController) {
 
                 if (aiEscribiendo) {
                     item {
-                        Text("Escribiendo...", color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 8.dp))
+                        Text(
+                            "Escribiendo...",
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
                 }
             }
 
-            // Input de Texto
+            // Opciones de respuesta rápida y campo de texto
             Surface(
                 color = Color.White,
                 shadowElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = mensajeInput,
-                        onValueChange = { mensajeInput = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Escribe tu duda aquí...") },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BluePrimary,
-                            unfocusedBorderColor = Color.LightGray
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    IconButton(
-                        onClick = {
-                            if (mensajeInput.isNotBlank()) {
-                                val textoUsuario = mensajeInput
-                                listaMensajes = listaMensajes + MensajeChat(textoUsuario, true)
-                                mensajeInput = ""
-                                aiEscribiendo = true
+                Column(modifier = Modifier.fillMaxWidth()) {
 
-                                // Simular respuesta de la IA
-                                scope.launch {
-                                    delay(1500) // Simula tiempo de procesamiento
-                                    val respuestaIA = generarRespuestaIA(textoUsuario)
-                                    listaMensajes = listaMensajes + MensajeChat(respuestaIA, false)
-                                    aiEscribiendo = false
-                                }
-                            }
-                        },
+                    // Chips de opciones rápidas (1, 2, 3, 4)
+                    LazyRow(
                         modifier = Modifier
-                            .size(50.dp)
-                            .background(BluePrimary, CircleShape)
+                            .fillMaxWidth()
+                            .padding(top = 12.dp, start = 16.dp, end = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
+                        items(opcionesRapidas) { opcion ->
+                            AssistChip(
+                                onClick = { enviarMensaje(opcion) },
+                                label = { Text("Opción $opcion") },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = BackgroundBeige,
+                                    labelColor = BluePrimary
+                                ),
+                                border = AssistChipDefaults.assistChipBorder(
+                                    borderColor = GoldAccent,
+                                    enabled = true
+                                )
+                            )
+                        }
+                    }
+
+                    // Input de Texto
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = mensajeInput,
+                            onValueChange = { mensajeInput = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Escribe el número o tu duda...") },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BluePrimary,
+                                unfocusedBorderColor = Color.LightGray
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        IconButton(
+                            onClick = { enviarMensaje(mensajeInput) },
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(BluePrimary, CircleShape)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
+                        }
                     }
                 }
             }
@@ -163,13 +209,33 @@ fun BurbujaMensaje(mensaje: MensajeChat) {
     }
 }
 
-// Función básica simuladora de IA (Aquí puedes conectar una API real luego)
+// Función simuladora de IA actualizada para reconocer números y texto libre
 fun generarRespuestaIA(pregunta: String): String {
-    val q = pregunta.lowercase()
+    val q = pregunta.lowercase().trim()
+
     return when {
-        q.contains("cancel") -> "Para cancelar una reserva, por favor ve a la sección 'Mis Reservas', selecciona el viaje y pulsa 'Cancelar'. Revisa nuestras políticas de reembolso antes de hacerlo."
-        q.contains("incluye") || q.contains("paquete") -> "Nuestros paquetes VIP generalmente incluyen vuelos ida y vuelta, hospedaje 5 estrellas, traslados y desayunos. Si quieres detalles de un paquete específico, ¡dime cuál!"
-        q.contains("contacto") || q.contains("humano") || q.contains("asesor") -> "Si tu consulta es compleja, te sugiero generar un Ticket o Agendar una Cita desde la pantalla anterior para que un asesor físico te atienda."
-        else -> "Esa es una gran pregunta. Como asistente IA, aún estoy aprendiendo. Si necesitas asistencia más profunda, te recomiendo generar un Ticket de Soporte en tu perfil."
+        // Opción 1: Cancelaciones
+        q == "1" || q.contains("cancel") ->
+            "Para cancelar una reserva, ve a la sección 'Mis Reservas', selecciona tu viaje y pulsa 'Cancelar'. Tienes hasta 48 horas antes del viaje para un reembolso completo según nuestras políticas."
+
+        // Opción 2: Paquetes
+        q == "2" || q.contains("incluye") || q.contains("paquete") ->
+            "Nuestros paquetes VIP generalmente incluyen: \n• Vuelos ida y vuelta \n• Hospedaje 5 estrellas \n• Traslados aeropuerto-hotel \n• Desayunos buffet.\n¿Te interesa algún destino en particular?"
+
+        // Opción 3: Pagos
+        q == "3" || q.contains("pago") || q.contains("tarjeta") || q.contains("metodo") ->
+            "Aceptamos pagos con tarjetas de crédito/débito (Visa, Mastercard, Amex). Todo el proceso de pago está encriptado y es 100% seguro."
+
+        // Opción 4: Soporte Humano
+        q == "4" || q.contains("contacto") || q.contains("humano") || q.contains("asesor") ->
+            "Entendido. Para hablar con un asesor físico, te sugiero volver a la pantalla de Soporte y usar la opción 'Generar Ticket' o 'Agendar Cita'. Un experto se pondrá en contacto contigo pronto."
+
+        // Saludos
+        q.contains("hola") || q.contains("buenos") || q.contains("buenas") ->
+            "¡Hola nuevamente! ¿En cuál de las opciones numéricas te puedo asistir o qué otra duda tienes?"
+
+        // Fallback (IA Generativa simulada para texto no reconocido)
+        else ->
+            "Esa es una pregunta interesante. Como modelo de IA de GlobalTours, mi base de conocimientos sugiere que consultes directamente con un asesor para detalles tan específicos. ¿Deseas explorar la opción 4?"
     }
 }

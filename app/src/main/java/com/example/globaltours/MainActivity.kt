@@ -1,12 +1,13 @@
 package com.example.globaltours
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+// import androidx.compose.material3.MaterialTheme
+// import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,25 +26,32 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 1. Leemos la preferencia apenas se abre la app
+        val sharedPreferences = getSharedPreferences("GlobalToursPrefs", Context.MODE_PRIVATE)
+        val onboardingCompletado = sharedPreferences.getBoolean("ONBOARDING_COMPLETADO", false)
+
+        // 2. Decidimos a dónde debe ir la app DESPUÉS del Splash Screen
+        val destinoPostSplash = if (onboardingCompletado) "login" else "onboarding"
+
         setContent {
-            MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    GlobalToursApp()
-                }
-            }
+            // Pasamos la decisión directamente a tu función principal
+            GlobalToursApp(destinoPostSplash = destinoPostSplash)
         }
     }
 }
 
 @Composable
-fun GlobalToursApp() {
+fun GlobalToursApp(destinoPostSplash: String) {
     val navController = rememberNavController()
 
+    // El NavHost AHORA INICIA en "splash"
     NavHost(navController = navController, startDestination = "splash") {
-        composable("splash") { SplashScreen(navController) }
+
+        // Le pasamos el destino final al SplashScreen
+        composable("splash") { SplashScreen(navController, destinoPostSplash) }
+
+        composable("onboarding") { OnboardingScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("registro") { RegistroScreen(navController) }
 
@@ -55,20 +63,15 @@ fun GlobalToursApp() {
         composable("personalizar") { PersonalizarScreen(navController) }
         composable("confirmacion") { ConfirmacionScreen(navController) }
         composable("mis_viajes") { MisViajesScreen(navController) }
-        composable("perfil") {
-            PerfilClienteScreen(navController = navController)
-        }
+        composable("perfil") { PerfilClienteScreen(navController = navController) }
         composable("reservas") { ReservasScreen(navController) }
         composable("notificaciones") { NotificacionesScreen(navController) }
-        composable("chat_soporte_ia") {
-            ChatSoporteIAScreen(navController)
-        }
-        composable("agendar_cita_soporte") {
-            AgendarCitaScreen(navController)
-        }
+        composable("chat_soporte_ia") { ChatSoporteIAScreen(navController) }
+        composable("agendar_cita_soporte") { AgendarCitaScreen(navController) }
         composable("mis_datos") { MisDatosScreen(navController) }
         composable("preferencias") { PreferenciasScreen(navController) }
         composable("metodos_pago") { MetodosPagoScreen(navController) }
+
         composable(
             route = "pasarela_pago?reservaId={reservaId}",
             arguments = listOf(
@@ -84,6 +87,7 @@ fun GlobalToursApp() {
                 reservaId = reservaId
             )
         }
+
         composable(
             route = "voucher?id={id}",
             arguments = listOf(
@@ -155,10 +159,11 @@ fun GlobalToursApp() {
 }
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(navController: NavController, destinoPostSplash: String) {
     LaunchedEffect(key1 = true) {
         delay(2500L)
-        navController.navigate("login") {
+        // Navega dinámicamente al Onboarding o al Login dependiendo de lo que evaluó MainActivity
+        navController.navigate(destinoPostSplash) {
             popUpTo("splash") { inclusive = true }
         }
     }

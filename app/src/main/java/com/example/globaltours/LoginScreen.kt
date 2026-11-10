@@ -178,7 +178,7 @@ fun LoginScreen(navController: NavController) {
                 painter = painterResource(id = logo_globaltours),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(160.dp)
+                    .size(180.dp)
                     .padding(bottom = 16.dp)
             )
 

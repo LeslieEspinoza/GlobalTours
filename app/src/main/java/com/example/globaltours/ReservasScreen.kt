@@ -1,5 +1,6 @@
 package com.example.globaltours
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,6 +52,28 @@ fun ReservasScreen(navController: NavController) {
         }
     }
 
+    // Función para cancelar la reserva en Supabase
+    fun cancelarReserva(reservaId: Any) {
+        cargando = true
+        scope.launch {
+            try {
+                SupabaseProvider.client.from("reservas").update(
+                    {
+                        set("estado", "Cancelado")
+                    }
+                ) {
+                    filter {
+                        eq("id", reservaId)
+                    }
+                }
+                cargarReservas() // Recargar la lista después de cancelar
+            } catch (e: Exception) {
+                android.util.Log.e("RESERVAS_SCREEN", "Error al cancelar reserva: ${e.message}", e)
+                cargando = false
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         cargarReservas()
     }
@@ -60,7 +83,7 @@ fun ReservasScreen(navController: NavController) {
         if (filtroEstado == "Todos") {
             listaReservas
         } else {
-            listaReservas.filter { it.estado.equals(filtroEstado, ignoreCase = true) }
+            listaReservas.filter { it.estado.contains(filtroEstado, ignoreCase = true) }
         }
     }
 
@@ -97,8 +120,8 @@ fun ReservasScreen(navController: NavController) {
                     )
                 )
                 FilterChip(
-                    selected = filtroEstado == "Pendiente de Pago",
-                    onClick = { filtroEstado = "Pendiente de Pago" },
+                    selected = filtroEstado == "Pendiente",
+                    onClick = { filtroEstado = "Pendiente" },
                     label = { Text("Pendientes") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = BluePrimary,
@@ -133,6 +156,9 @@ fun ReservasScreen(navController: NavController) {
                             reserva = reserva,
                             onPagarAhora = {
                                 navController.navigate("pasarela_pago?reservaId=${reserva.id}")
+                            },
+                            onCancelarReserva = {
+                                cancelarReserva(reserva.id)
                             }
                         )
                     }
@@ -145,8 +171,11 @@ fun ReservasScreen(navController: NavController) {
 @Composable
 fun ReservaItemCard(
     reserva: ReservaModel,
-    onPagarAhora: () -> Unit
+    onPagarAhora: () -> Unit,
+    onCancelarReserva: () -> Unit
 ) {
+    var mostrarDialogoCancelar by remember { mutableStateOf(false) }
+
     // Selección dinámica de icono según tipo de servicio
     val icono = when (reserva.tipo_servicio) {
         "Vuelo" -> Icons.Default.Flight
@@ -156,10 +185,10 @@ fun ReservaItemCard(
     }
 
     // Selección dinámica de color según el estado
-    val (colorEstado, textoEstado) = if (reserva.estado.contains("Pendiente", ignoreCase = true)) {
-        Pair(Color(0xFFD32F2F), "Pendiente de Pago")
-    } else {
-        Pair(Color(0xFF2E7D32), "Confirmado")
+    val (colorEstado, textoEstado) = when {
+        reserva.estado.contains("Cancelad", ignoreCase = true) -> Pair(Color.Gray, "Cancelada")
+        reserva.estado.contains("Pendiente", ignoreCase = true) -> Pair(Color(0xFFD32F2F), "Pendiente de Pago")
+        else -> Pair(Color(0xFF2E7D32), "Confirmado")
     }
 
     Card(
@@ -209,17 +238,61 @@ fun ReservaItemCard(
             ) {
                 Text(textoEstado, color = colorEstado, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 
-                if (reserva.estado.contains("Pendiente", ignoreCase = true)) {
-                    Button(
-                        onClick = onPagarAhora,
-                        colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text("Pagar Ahora", color = BluePrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                // Botones de acción agrupados a la derecha
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                    // Botón de cancelar (Solo se muestra si no está ya cancelada)
+                    if (!reserva.estado.contains("Cancelad", ignoreCase = true)) {
+                        OutlinedButton(
+                            onClick = { mostrarDialogoCancelar = true },
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
+                            border = BorderStroke(1.dp, Color(0xFFD32F2F)),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Cancelar", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    // Botón de pagar ahora
+                    if (reserva.estado.contains("Pendiente", ignoreCase = true)) {
+                        Button(
+                            onClick = onPagarAhora,
+                            colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Pagar Ahora", color = BluePrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
         }
+    }
+
+    // Diálogo de confirmación para cancelar reserva
+    if (mostrarDialogoCancelar) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoCancelar = false },
+            title = { Text("Cancelar Reserva", fontWeight = FontWeight.Bold, color = BluePrimary) },
+            text = { Text("¿Estás seguro de que deseas cancelar la reserva de '${reserva.titulo}'? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoCancelar = false
+                        onCancelarReserva()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                ) {
+                    Text("Sí, Cancelar", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoCancelar = false }) {
+                    Text("Volver", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White
+        )
     }
 }
