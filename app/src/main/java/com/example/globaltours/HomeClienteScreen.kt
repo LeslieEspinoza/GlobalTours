@@ -164,7 +164,7 @@ fun PaquetesDestacadosSection(paquetes: List<PaqueteTuristico>, navController: N
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
-            TextButton(onClick = { navController.navigate("reservas") }) {
+            TextButton(onClick = { navController.navigate("todos_los_paquetes") }) {
                 Text("Ver todos", color = BluePrimary, fontWeight = FontWeight.SemiBold)
             }
         }

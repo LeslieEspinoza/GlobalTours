@@ -71,6 +71,9 @@ fun GlobalToursApp(destinoPostSplash: String) {
         composable("mis_datos") { MisDatosScreen(navController) }
         composable("preferencias") { PreferenciasScreen(navController) }
         composable("metodos_pago") { MetodosPagoScreen(navController) }
+        composable("todos_los_paquetes") {
+            TodosLosPaquetesScreen(navController)
+        }
 
         composable(
             route = "pasarela_pago?reservaId={reservaId}",
