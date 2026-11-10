@@ -28,6 +28,9 @@ import androidx.navigation.NavController
 import com.example.globaltours.R.drawable.logo_globaltours
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.OTP
+import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.auth.OtpType
 import kotlinx.coroutines.launch
 
 // Paleta de colores corporativa
@@ -44,6 +47,15 @@ fun LoginScreen(navController: NavController) {
     var cargando by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+
+    // Estados para el diálogo de recuperación con código (OTP)
+    var mostrarDialogoRecuperar by remember { mutableStateOf(false) }
+    var pasoRecuperacion by remember { mutableStateOf(1) } // 1: Pedir correo, 2: Pedir código y nueva clave
+    var emailRecuperar by remember { mutableStateOf("") }
+    var codigoRecuperacion by remember { mutableStateOf("") }
+    var nuevaPassword by remember { mutableStateOf("") }
+    var mensajeRecuperacion by remember { mutableStateOf("") }
+    var procesandoRecuperacion by remember { mutableStateOf(false) }
 
     val textFieldShape = RoundedCornerShape(12.dp)
     val textFieldColors = OutlinedTextFieldDefaults.colors(
@@ -86,6 +98,65 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
+    // Funciones de Recuperación
+    fun enviarCorreoCodigo() {
+        if (emailRecuperar.isBlank()) {
+            mensajeRecuperacion = "Ingresa tu correo electrónico."
+            return
+        }
+        procesandoRecuperacion = true
+        mensajeRecuperacion = ""
+
+        scope.launch {
+            try {
+                // Solicitar código a Supabase
+                SupabaseProvider.client.auth.resetPasswordForEmail(emailRecuperar)
+                pasoRecuperacion = 2
+                mensajeRecuperacion = "Código enviado. Revisa tu correo."
+            } catch (e: Exception) {
+                mensajeRecuperacion = "Error al enviar código: ${e.message}"
+            } finally {
+                procesandoRecuperacion = false
+            }
+        }
+    }
+
+    fun cambiarPasswordConCodigo() {
+        if (codigoRecuperacion.isBlank() || nuevaPassword.isBlank()) {
+            mensajeRecuperacion = "Ingresa el código y la nueva contraseña."
+            return
+        }
+        procesandoRecuperacion = true
+        mensajeRecuperacion = ""
+
+        scope.launch {
+            try {
+                // 1. Verificar el OTP, esto inicia sesión temporalmente al usuario
+                SupabaseProvider.client.auth.verifyEmailOtp(
+                    type = OtpType.Email.RECOVERY,
+                    email = emailRecuperar,
+                    token = codigoRecuperacion
+                )
+
+                // 2. Actualizar a la nueva contraseña
+                SupabaseProvider.client.auth.updateUser {
+                    password = nuevaPassword
+                }
+
+                // 3. Cerrar sesión por seguridad y mandar al usuario a que inicie con la nueva clave
+                SupabaseProvider.client.auth.signOut()
+
+                mostrarDialogoRecuperar = false
+                mensajeError = "¡Contraseña actualizada! Inicia sesión."
+            } catch (e: Exception) {
+                mensajeRecuperacion = "Código incorrecto o expirado."
+                android.util.Log.e("ERROR_OTP", "Error cambiando clave: ${e.message}")
+            } finally {
+                procesandoRecuperacion = false
+            }
+        }
+    }
+
     // Contenedor principal que centra el contenido
     Box(
         modifier = Modifier
@@ -96,10 +167,10 @@ fun LoginScreen(navController: NavController) {
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 450.dp) // Evita que se estire demasiado en tablets
+                .widthIn(max = 450.dp)
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState())
-                .imePadding(), // Sube el formulario automáticamente al abrir el teclado
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -119,7 +190,6 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Tarjeta blanca para agrupar los campos de texto
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -142,29 +212,45 @@ fun LoginScreen(navController: NavController) {
                         singleLine = true
                     )
 
-                    OutlinedTextField(
-                        value = passwordInput,
-                        onValueChange = { passwordInput = it },
-                        label = { Text("Contraseña") },
-                        leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        colors = textFieldColors,
-                        shape = textFieldShape,
-                        trailingIcon = {
-                            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(imageVector = image, contentDescription = "Mostrar/Ocultar", tint = Color.Gray)
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
+                    Column {
+                        OutlinedTextField(
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
+                            label = { Text("Contraseña") },
+                            leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            colors = textFieldColors,
+                            shape = textFieldShape,
+                            trailingIcon = {
+                                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(imageVector = image, contentDescription = "Mostrar/Ocultar", tint = Color.Gray)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        TextButton(
+                            onClick = {
+                                pasoRecuperacion = 1
+                                emailRecuperar = emailInput
+                                codigoRecuperacion = ""
+                                nuevaPassword = ""
+                                mensajeRecuperacion = ""
+                                mostrarDialogoRecuperar = true
+                            },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("¿Olvidaste tu contraseña?", color = BluePrimary, fontSize = 12.sp)
+                        }
+                    }
 
                     if (mensajeError.isNotEmpty()) {
                         Text(
                             text = mensajeError,
-                            color = Color(0xFFD32F2F),
+                            color = if (mensajeError.contains("actualizada")) Color(0xFF2E7D32) else Color(0xFFD32F2F),
                             fontSize = 14.sp
                         )
                     }
@@ -196,5 +282,84 @@ fun LoginScreen(navController: NavController) {
                 Text("¿Eres nuevo? Regístrate aquí", color = BluePrimary, fontWeight = FontWeight.SemiBold)
             }
         }
+    }
+
+    // Diálogo de recuperación con 2 pasos
+    if (mostrarDialogoRecuperar) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoRecuperar = false },
+            title = { Text("Recuperar contraseña", color = BluePrimary, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    if (pasoRecuperacion == 1) {
+                        Text("Ingresa el correo asociado a tu cuenta para enviarte un código de 6 dígitos.", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = emailRecuperar,
+                            onValueChange = { emailRecuperar = it },
+                            label = { Text("Correo electrónico") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            colors = textFieldColors,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    } else {
+                        Text("Ingresa el código que enviamos a tu correo y tu nueva contraseña.", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = codigoRecuperacion,
+                            onValueChange = { codigoRecuperacion = it },
+                            label = { Text("Código de 6 dígitos") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = textFieldColors,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = nuevaPassword,
+                            onValueChange = { nuevaPassword = it },
+                            label = { Text("Nueva contraseña") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            visualTransformation = PasswordVisualTransformation(),
+                            colors = textFieldColors,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+
+                    if (mensajeRecuperacion.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = mensajeRecuperacion,
+                            color = if (mensajeRecuperacion.contains("enviado")) Color(0xFF2E7D32) else Color(0xFFD32F2F),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (pasoRecuperacion == 1) enviarCorreoCodigo()
+                        else cambiarPasswordConCodigo()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                    enabled = !procesandoRecuperacion
+                ) {
+                    if (procesandoRecuperacion) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(if (pasoRecuperacion == 1) "Enviar código" else "Cambiar contraseña")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoRecuperar = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White
+        )
     }
 }
