@@ -1,16 +1,19 @@
 package com.example.globaltours
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -112,7 +115,6 @@ fun MisViajesScreen(navController: NavController) {
                         }
                     }
                 } else {
-                    // ⚠️ SE AGREGA fillMaxSize() PARA EVITAR ALTURA INFINITA EN EL LAZYCOLUMN
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -132,6 +134,7 @@ fun MisViajesScreen(navController: NavController) {
         }
     }
 }
+
 @Composable
 fun TarjetaViajeItem(
     viaje: ReservaModel,
@@ -139,6 +142,14 @@ fun TarjetaViajeItem(
 ) {
     val estaPagado = viaje.estado.contains("Confirmad", ignoreCase = true) ||
             viaje.estado.contains("Completad", ignoreCase = true)
+
+    // Estados para la ventana de calificación
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    var calificacion by remember { mutableIntStateOf(0) }
+    var comentario by remember { mutableStateOf("") }
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -186,6 +197,7 @@ fun TarjetaViajeItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // NUEVA FILA INFERIOR CON EL BOTÓN DE CALIFICAR
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -198,31 +210,127 @@ fun TarjetaViajeItem(
                     color = BluePrimary
                 )
 
-                // Botón deshabilitado si no está pagado
-                Button(
-                    onClick = onClickVoucher,
-                    enabled = estaPagado,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BluePrimary,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFFE0E0E0),
-                        disabledContentColor = Color(0xFF9E9E9E)
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (estaPagado) Icons.Default.ConfirmationNumber else Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (estaPagado) "Ver Voucher" else "Pago Pendiente",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    // Botón de Calificar (Se muestra solo si el viaje está pagado)
+                    if (estaPagado) {
+                        TextButton(onClick = { mostrarDialogo = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Calificar",
+                                tint = Color(0xFFFFC107)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Calificar", color = BluePrimary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Button(
+                        onClick = onClickVoucher,
+                        enabled = estaPagado,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BluePrimary,
+                            contentColor = Color.White,
+                            disabledContainerColor = Color(0xFFE0E0E0),
+                            disabledContentColor = Color(0xFF9E9E9E)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (estaPagado) Icons.Default.ConfirmationNumber else Icons.Default.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (estaPagado) "Ver Voucher" else "Pago Pendiente",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
+    }
+
+    // VENTANA EMERGENTE (POP-UP) DE CALIFICACIÓN
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text("Calificar Experiencia", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("¿Qué te pareció: ${viaje.titulo}?")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Fila de 5 estrellas dinámicas
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        for (i in 1..5) {
+                            IconButton(onClick = { calificacion = i }) {
+                                Icon(
+                                    imageVector = if (calificacion >= i) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                    contentDescription = "Estrella $i",
+                                    tint = if (calificacion >= i) Color(0xFFFFC107) else Color.Gray,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = comentario,
+                        onValueChange = { comentario = it },
+                        label = { Text("Deja un comentario (opcional)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 3
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (calificacion == 0) {
+                            Toast.makeText(context, "Por favor selecciona al menos 1 estrella", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        // Guardar en Supabase
+                        scope.launch {
+                            try {
+                                val evaluacion = EvaluacionClienteInsert(
+                                    calificacion = calificacion,
+                                    comentario = comentario,
+                                    paquete_nombre = viaje.titulo
+                                )
+
+                                SupabaseProvider.client.from("evaluaciones_clientes").insert(evaluacion)
+
+                                Toast.makeText(context, "¡Gracias por tu opinión!", Toast.LENGTH_SHORT).show()
+                                mostrarDialogo = false
+
+                            } catch (e: Exception) {
+                                android.util.Log.e("EVALUACION_ERROR", "Error: ${e.message}")
+                                Toast.makeText(context, "Error al enviar la calificación", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                ) {
+                    Text("Enviar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        )
     }
 }

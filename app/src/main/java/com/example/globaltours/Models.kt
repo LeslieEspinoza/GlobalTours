@@ -114,3 +114,10 @@ data class CitaModel(
     val telefono: String,
     val destino: String
 )
+
+@Serializable
+data class EvaluacionClienteInsert(
+    val calificacion: Int,
+    val comentario: String,
+    val paquete_nombre: String? = null
+)
