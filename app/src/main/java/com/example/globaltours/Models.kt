@@ -119,5 +119,7 @@ data class CitaModel(
 data class EvaluacionClienteInsert(
     val calificacion: Int,
     val comentario: String,
-    val paquete_nombre: String? = null
+    val paquete_nombre: String? = null,
+    val cliente_email: String? = null,
+    val cliente_nombre: String? = null
 )
